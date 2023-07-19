@@ -22,16 +22,35 @@ ngl::Vec3 randomVectorOnSphere(float _radius = 1.0f)
 Flock::Flock(size_t _numParticles)
 {
   m_boids.resize(_numParticles);
-  ngl::Vec3 emitDir(0, 10.0f, 0);
   for (auto &p : m_boids)
   {
-    p.get_direction() = emitDir * ngl::Random::randomPositiveNumber() + randomVectorOnSphere() * 10;
+    p.get_direction() = m_emit_direction * ngl::Random::randomPositiveNumber() + randomVectorOnSphere() * 10;
     p.get_direction().m_y = std::abs(p.get_direction().m_y);
-    p.get_colour() = ngl::Random::getRandomColour3();
   }
 
   m_vao=ngl::VAOFactory::createVAO(ngl::simpleVAO, GL_POINTS);
 
+}
+
+void Flock::edge_detection(Boid &_boid)
+{
+  ngl::Vec3 new_dir = _boid.get_direction();
+  if(_boid.get_position()[0]>=(m_tank_radius.m_x) ||
+       _boid.get_position()[0]<=(-1*m_tank_radius.m_x) )
+    {
+        new_dir[0] *= -1*m_speed_loss;
+    }
+  if(_boid.get_position()[1]>=(m_tank_radius.m_y) ||
+       _boid.get_position()[1]<=(-1*m_tank_radius.m_y) )
+    {
+        new_dir[1] *= -1*m_speed_loss;
+    }
+  if(_boid.get_position()[2]>=(m_tank_radius.m_z) ||
+       _boid.get_position()[2]<=(-1*m_tank_radius.m_z) )
+    {
+        new_dir[2] *= -1*m_speed_loss;
+    }
+    _boid.set_direction(new_dir);
 }
 
 size_t Flock::getNumParticles() const
@@ -41,24 +60,33 @@ size_t Flock::getNumParticles() const
 
 void Flock::update()
 {
-  float _dt = 0.01f;
-  ngl::Vec3 gravity(0, -9.81f, 0);
+  float _dt = 0.03f;
+  ngl::Vec3 gravity(0, -1.0f, 0);
   for (auto &boid : m_boids)
   {
-    ngl::Vec3 aligned = alignment(boid);
-    ngl::Vec3 cohesive = cohesion(boid);
-    ngl::Vec3 separated = separation(boid);
-    boid.set_acceleration(separated + aligned + cohesive);
+    ngl::Vec3 aligned = {0.0f, 0.0f, 0.0f};
+    ngl::Vec3 cohesive = {0.0f, 0.0f, 0.0f};
+    ngl::Vec3 separated = {0.0f, 0.0f, 0.0f};
+
+    if (m_alignment)
+    {
+      aligned = alignment(boid);
+    }
+    if (m_cohesion)
+    {
+      cohesive = cohesion(boid);
+    }
+    if (m_separation)
+    {
+       separated = separation(boid);
+    }
+
+    boid.set_acceleration(separated + cohesive + aligned);
+    edge_detection(boid);
     boid.get_position() += boid.get_direction() * _dt;
-    boid.get_direction() += (boid.get_acceleration()) * _dt * 0.2f;
+    boid.get_direction() += (boid.get_acceleration()) + gravity * _dt * 0.2f;
     boid.set_acceleration({0.0f,0.0f,0.0f});
 
-    /* if (boid.get_position().m_y <= 0.0f)
-    {
-      boid.get_position().set(0, 0, 0);
-      boid.get_direction() = ngl::Vec3{0, 10, 0} * ngl::Random::randomPositiveNumber() + randomVectorOnSphere() * 10;
-      boid.get_direction().m_y = std::abs(boid.get_direction().m_y);
-    } */
   }
 }
 
@@ -101,6 +129,7 @@ ngl::Vec3 Flock::alignment(Boid &_boid)
   {
     avg_dir /= total;
     avg_dir -= _boid.get_direction();
+    avg_dir.clamp(m_force);
   }
   return avg_dir;
 }
@@ -123,6 +152,7 @@ ngl::Vec3 Flock::cohesion(Boid &_boid)
     avg_dir /= total;
     avg_dir -= _boid.get_position();
     avg_dir -= _boid.get_direction();
+    avg_dir.clamp(m_force);
   }
   return avg_dir;
 }
@@ -146,6 +176,7 @@ ngl::Vec3 Flock::separation(Boid &_boid)
   {
     avg_dir /= total;
     avg_dir -= _boid.get_direction();
+    avg_dir.clamp(m_force);
   }
   return avg_dir;
 }

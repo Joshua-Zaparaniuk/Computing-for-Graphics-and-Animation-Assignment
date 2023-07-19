@@ -23,11 +23,22 @@ public:
   ngl::Vec3 cohesion(Boid &_boid);
   ngl::Vec3 separation(Boid &_boid);
 
+  void edge_detection(Boid &_boid);
+
   Boid &get_boid(const int &_id);
 
 private:
   std::vector<Boid> m_boids;
-  const float m_threshold = 100.0f;
+  const float m_threshold =10.0f;
+  const float m_force = 12.0f;
+  const float m_speed_loss = 0.2f;
+
+  const bool m_alignment = true;
+  const bool m_cohesion = true;
+  const bool m_separation = true;
+
+  ngl::Vec3 m_tank_radius = {10.0f, 10.0f, 10.0f};
+  ngl::Vec3 m_emit_direction = {0.0, 10.0f, 0.0f};
   std::unique_ptr<ngl::AbstractVAO> m_vao;
  
 };
