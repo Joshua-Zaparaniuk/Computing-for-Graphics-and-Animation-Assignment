@@ -21,7 +21,7 @@ ngl::Vec3 randomVectorOnSphere(float _radius = 1.0f)
 
 Flock::Flock(size_t _numParticles)
 {
-  m_particles.resize(_numParticles);
+  m_boids.resize(_numParticles);
   ngl::Vec3 emitDir(0, 10.0f, 0);
   for (auto &p : m_particles)
   {
@@ -30,13 +30,13 @@ Flock::Flock(size_t _numParticles)
     p.colour = ngl::Random::getRandomColour3();
   }
 
-  m_vao=ngl::VAOFactory::createVAO(ngl::simpleVAO,GL_POINTS);
+  m_vao=ngl::VAOFactory::createVAO(ngl::simpleVAO, GL_POINTS);
 
 }
 
 size_t Flock::getNumParticles() const
 {
-  return m_particles.size();
+  return m_boids.size();
 }
 
 void Flock::update()
@@ -71,6 +71,45 @@ void Flock::render() const
   m_vao->draw();
 
   m_vao->unbind();
+}
 
+void Flock::dist(const ngl::Vec3 &_a, const ngl::Vec3 &_b)
+{
+  return std::sqrt(std::pow(_a.x - _b.x, 2) + std::pow(_a.y - _b.y, 2) +
+        std::pow(_a.z - _b.z, 2));
+}
 
+void Flock::alignment(Boid &_boid)
+{
+  
+}
+
+void Flock::cohesion(Boid &_boid)
+{
+
+}
+
+void Flock::separation(Boid &_boid)
+{
+
+}
+
+Boid &Flock::get_boid(const int &_id)
+{
+  return m_boids[_id];
+}
+
+void Flock::find_neighbours(const &Boid)
+{
+  for (auto &p: m_boids)
+  {
+    if ( dist(p.get_position(), Boid.get_position()) <= m_treshold)
+    {
+      Boid.set_neighbour(p.get_id());
+    }
+    else
+    {
+      Boid.remove_neighbour(p.get_id())
+    }
+  }
 }
