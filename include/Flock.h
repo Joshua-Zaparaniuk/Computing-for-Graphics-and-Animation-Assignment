@@ -19,16 +19,15 @@ public:
 
   double dist(const ngl::Vec3 &_a, const ngl::Vec3 &_b);
 
-  void alignment(Boid &_boid);
-  void cohesion(Boid &_boid);
-  void separation(Boid &_boid);
+  ngl::Vec3 alignment(Boid &_boid);
+  ngl::Vec3 cohesion(Boid &_boid);
+  ngl::Vec3 separation(Boid &_boid);
 
-  void find_neighbours(Boid &_boid);
   Boid &get_boid(const int &_id);
 
 private:
   std::vector<Boid> m_boids;
-  float m_threshold;
+  const float m_threshold = 100.0f;
   std::unique_ptr<ngl::AbstractVAO> m_vao;
  
 };

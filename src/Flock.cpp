@@ -43,18 +43,22 @@ void Flock::update()
 {
   float _dt = 0.01f;
   ngl::Vec3 gravity(0, -9.81f, 0);
-  for (auto &p : m_boids)
+  for (auto &boid : m_boids)
   {
-    p.get_direction() += gravity * _dt * 0.5f;
-    p.get_position() += p.get_direction() * _dt;
-    p.get_scale() += 0.001f;
-    if (p.get_position().m_y <= 0.0f)
+    ngl::Vec3 aligned = alignment(boid);
+    ngl::Vec3 cohesive = cohesion(boid);
+    ngl::Vec3 separated = separation(boid);
+    boid.set_acceleration(separated + aligned + cohesive);
+    boid.get_position() += boid.get_direction() * _dt;
+    boid.get_direction() += (boid.get_acceleration()) * _dt * 0.2f;
+    boid.set_acceleration({0.0f,0.0f,0.0f});
+
+    /* if (boid.get_position().m_y <= 0.0f)
     {
-      p.get_position().set(0, 0, 0);
-      p.get_direction() = ngl::Vec3{0, 10, 0} * ngl::Random::randomPositiveNumber() + randomVectorOnSphere() * 10;
-      p.get_direction().m_y = std::abs(p.get_direction().m_y);
-      p.get_colour() = ngl::Random::getRandomColour3();
-    }
+      boid.get_position().set(0, 0, 0);
+      boid.get_direction() = ngl::Vec3{0, 10, 0} * ngl::Random::randomPositiveNumber() + randomVectorOnSphere() * 10;
+      boid.get_direction().m_y = std::abs(boid.get_direction().m_y);
+    } */
   }
 }
 
@@ -80,19 +84,70 @@ double Flock::dist(const ngl::Vec3 &_a, const ngl::Vec3 &_b)
         std::pow(_a.m_z - _b.m_z, 2));
 }
 
-void Flock::alignment(Boid &_boid)
+ngl::Vec3 Flock::alignment(Boid &_boid)
 {
-
+  static ngl::Vec3 avg_dir;
+  ngl::Real total=0;
+  for (auto &other: m_boids)
+  {
+    double dist = this->dist(_boid.get_position(), other.get_position());
+    if (other != _boid && dist < m_threshold)
+    {
+      avg_dir += other.get_direction();
+      total += 1;
+    }
+  }
+  if (total > 0)
+  {
+    avg_dir /= total;
+    avg_dir -= _boid.get_direction();
+  }
+  return avg_dir;
 }
 
-void Flock::cohesion(Boid &_boid)
+ngl::Vec3 Flock::cohesion(Boid &_boid)
 {
-
+  static ngl::Vec3 avg_dir;
+  ngl::Real total=0;
+  for (auto &other: m_boids)
+  {
+    double dist = this->dist(_boid.get_position(), other.get_position());
+    if (other != _boid && dist < m_threshold)
+    {
+      avg_dir += other.get_position();
+      total += 1;
+    }
+  }
+  if (total > 0)
+  {
+    avg_dir /= total;
+    avg_dir -= _boid.get_position();
+    avg_dir -= _boid.get_direction();
+  }
+  return avg_dir;
 }
 
-void Flock::separation(Boid &_boid)
+ngl::Vec3 Flock::separation(Boid &_boid)
 {
-
+  static ngl::Vec3 avg_dir;
+  ngl::Real total=0;
+  for (auto &other: m_boids)
+  {
+    double dist = this->dist(_boid.get_position(), other.get_position());
+    if (other != _boid && dist < m_threshold)
+    {
+      ngl::Vec3 diff = _boid.get_position() - other.get_position();
+      diff /= dist;
+      avg_dir += diff;
+      total += 1;
+    }
+  }
+  if (total > 0)
+  {
+    avg_dir /= total;
+    avg_dir -= _boid.get_direction();
+  }
+  return avg_dir;
 }
 
 Boid &Flock::get_boid(const int &_id)
@@ -100,17 +155,3 @@ Boid &Flock::get_boid(const int &_id)
   return m_boids[_id];
 }
 
-void Flock::find_neighbours(Boid &_boid)
-{
-  for (auto &p: m_boids)
-  {
-    if ( dist(p.get_position(), _boid.get_position()) <= m_threshold)
-    {
-      _boid.set_neighbour(p.get_id());
-    }
-    else
-    {
-      _boid.remove_neighbour(p.get_id());
-    }
-  }
-}

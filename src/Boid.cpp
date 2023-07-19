@@ -13,6 +13,11 @@ Boid::Boid(const ngl::Vec3 position,
     m_lifetime = lifetime;
 }
 
+bool Boid::operator!=(Boid &_other) const
+{
+    return m_position!=_other.get_position();
+}
+
 ngl::Vec3 &Boid::get_position() 
 {
     return m_position;
@@ -28,11 +33,6 @@ ngl::Vec3 &Boid::get_colour()
     return m_colour;
 }
 
-std::list<int> &Boid::get_neighbours() 
-{
-    return m_neighbours;
-}
-
 int &Boid::get_lifetime()
 {
     return m_lifetime;
@@ -43,19 +43,9 @@ float &Boid::get_scale()
     return m_scale;
 }
 
-int &Boid::get_id()
+ngl::Vec3 &Boid::get_acceleration()
 {
-    return m_id;
-}
-
-void Boid::remove_neighbour(const int &_id)
-{
-    m_neighbours.remove(_id);
-}
-
-void Boid::set_id(const int &id)
-{
-    m_id = id;
+    return m_acceleration;
 }
 
 void Boid::set_position(const ngl::Vec3 &position)
@@ -68,15 +58,16 @@ void Boid::set_direction(const ngl::Vec3 &direction)
     m_direction = direction;
 }
 
+void Boid::set_acceleration(const ngl::Vec3 &acceleration)
+{
+    m_acceleration = acceleration;
+}
+
 void Boid::set_colour(const ngl::Vec3 &colour)
 {
     m_colour = colour;
 }
 
-void Boid::set_neighbour(const int &neighbour)
-{
-    m_neighbours.push_back(neighbour);
-}
 
 void Boid::set_lifetime(const int &lifetime)
 {
