@@ -29,7 +29,7 @@ public:
 
 private:
   std::vector<Boid> m_boids;
-  const float m_threshold =10.0f;
+  const float m_threshold =25.0f;
   const float m_force = 12.0f;
   const float m_speed_loss = 0.2f;
 
