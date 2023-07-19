@@ -12,12 +12,18 @@ groups and boid neighbour behaviours inherit some of their functionality from th
 ## Flocking Rules
 
 ### Cohesion
-This rule applies to boids from different neighbourhoods that approach a close proximity to one another.
-In these use cases, the boids have an attraction to their neighbourhood pairs, which is also the first
-rule of cohesion or attraction between neighbouring Boids.
+When other boids are within a distance threshold to the boid in question, they attract towards the 
+current boid. This is calculated by averaging the distance of every other boid and subtracting the
+position of the current boid relative to the distance of every other boid. It was important to 
+normalize the distance values, as this caused numerical instabilites in the calculations.
 
 ### Separation
-This is a force that repels neighbouring Boids from one another. It counteracts the Cohesion rule as it
-pushes neighbouring Boids apart from one another.
+This is a force that repels neighbouring Boids from one another. This rule operates not only a single
+boids, but has to repel a boid in question based on the average position and velocity of any boid
+that is within a distance away from the boid in question. Creating the behaviour of repulsion forces
+in nature to give the system more chaotic motion.
 
-### Aggregation
+### Alignment
+Whenever the other boids are within a distance threshold to the current boid, they're velocities and
+positions are averaged relative to the current boid. This is the alignment rule, which is similar to
+when flocks migrate in nature and form very distinct follower patterns.
