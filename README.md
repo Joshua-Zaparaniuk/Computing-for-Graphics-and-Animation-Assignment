@@ -9,6 +9,21 @@ of system rules. Independent boid controls are implemented within a separate cla
 on a boid basis are implemented within the Boids class, whereas system calculations such as neighbour
 groups and boid neighbour behaviours inherit some of their functionality from the Boids class.
 
+### GUI class
+Within the GUI mainwindow.cpp and header files, the implementations of the user interface are controlled
+via function callbacks sent to the NGLScene class sets which directly sets the private member values 
+responsible for the simulation.
+
+### NGLScene class
+This class controls the connections between user inputs and simulation values. Furthermore, screen
+position and draw calls are actually implemented through this class by inheriting from the 
+Flock class.
+
+### Boid class
+This class is essentially a holder of attribute values and getter and setter methods that are called
+within the main Flocking class sets. The Flock class inherits and implements functionality upon
+the attributes within this class.
+
 ## Flocking Rules
 
 ### Cohesion
@@ -27,3 +42,8 @@ in nature to give the system more chaotic motion.
 Whenever the other boids are within a distance threshold to the current boid, they're velocities and
 positions are averaged relative to the current boid. This is the alignment rule, which is similar to
 when flocks migrate in nature and form very distinct follower patterns.
+
+## References
+John Macey, ParticleNGL code, sourced here: https://github.com/jmacey/ParticleNGL
+Coding Train, Craig Reynolds implementation in java, sourced here: https://www.youtube.com/watch?v=mhjuuHl6qHM&list=PLgF_pcLMWjq8x9JbKCZyK4c0Uve32Obrl&index=2&t=1552s
+Craig Reynolds, Boids background and update, sourced here: https://www.red3d.com/cwr/boids/
