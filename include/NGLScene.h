@@ -5,7 +5,7 @@
 #include "Flock.h"
 #include "WindowParams.h"
 // this must be included after NGL includes else we get a clash with gl libs
-#include <QOpenGLWindow>
+#include <QOpenGLWidget>
 //----------------------------------------------------------------------------------------------------------------------
 /// @file NGLScene.h
 /// @brief this class inherits from the Qt OpenGLWindow and allows us to use NGL to draw OpenGL
@@ -19,14 +19,15 @@
 /// put in this file
 //----------------------------------------------------------------------------------------------------------------------
 
-class NGLScene : public QOpenGLWindow
+class NGLScene : public QOpenGLWidget
 {
+    Q_OBJECT
 public:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief ctor for our NGL drawing class
   /// @param [in] parent the parent window to the class
   //----------------------------------------------------------------------------------------------------------------------
-  NGLScene();
+  NGLScene(QWidget *_parent);
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief dtor must close down ngl and release OpenGL resources
   //----------------------------------------------------------------------------------------------------------------------
@@ -44,6 +45,41 @@ public:
   /// @brief this is called everytime we resize the window
   //----------------------------------------------------------------------------------------------------------------------
   void resizeGL(int _w, int _h) override;
+
+  public slots:
+
+  void clear_boids();
+  void add_boids(const int &_num_boids);
+
+  void set_alignment(const bool &state);
+  void set_cohesion(const bool &state);
+  void set_separation(const bool &state);
+
+  void set_boid_size(const int &_size);
+  void set_threshold(const double &_threshold);
+  void set_force(const double &_force);
+  void set_speed_loss(const double &_speed_loss);
+  void set_delta_time(const double &_delta_time);
+
+  void set_cohesion_factor(const double &_factor);
+  void set_alignment_factor(const double &_factor);
+  void set_separation_factor(const double &_factor);
+
+  void set_tank_pos_x(const double &_posX);
+  void set_tank_pos_y(const double &_posY);
+  void set_tank_pos_z(const double &_posZ);
+
+  void set_tank_rad_x(const double &_radX);
+  void set_tank_rad_y(const double &_radY);
+  void set_tank_rad_z(const double &_radZ);
+
+  void set_emit_dir_x(const double &_emitDirX);
+  void set_emit_dir_y(const double &_emitDirY);
+  void set_emit_dir_z(const double &_emitDirZ);
+
+  void set_gravity(const double &_gravity);
+
+  void set_defaults();
 
 private:
   //----------------------------------------------------------------------------------------------------------------------

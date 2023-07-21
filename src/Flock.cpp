@@ -32,25 +32,58 @@ Flock::Flock(size_t _numParticles)
 
 }
 
-void Flock::edge_detection(Boid &_boid)
+void Flock::add_boids(const int &_num_boids)
+{
+  for(int i=0; i<_num_boids; ++i)
+  {
+    Boid b;
+    m_boids.push_back(b);
+  }
+}
+
+void Flock::edges(Boid &_boid)
 {
   ngl::Vec3 new_dir = _boid.get_direction();
-  if(_boid.get_position()[0]>=(m_tank_radius.m_x) ||
-       _boid.get_position()[0]<=(-1*m_tank_radius.m_x) )
-    {
-        new_dir[0] *= -1*m_speed_loss;
-    }
-  if(_boid.get_position()[1]>=(m_tank_radius.m_y) ||
-       _boid.get_position()[1]<=(-1*m_tank_radius.m_y) )
-    {
-        new_dir[1] *= -1*m_speed_loss;
-    }
-  if(_boid.get_position()[2]>=(m_tank_radius.m_z) ||
-       _boid.get_position()[2]<=(-1*m_tank_radius.m_z) )
-    {
-        new_dir[2] *= -1*m_speed_loss;
-    }
+  ngl::Vec3 new_pos = _boid.get_position();
+
+  if(_boid.get_position()[0]>(m_tank_radius.m_x + m_tank_pos.m_x) )
+  {
+    new_dir[0] *= -1*m_speed_loss;
+    new_pos.m_x = (m_tank_radius.m_x + m_tank_pos.m_x) - ( _boid.get_position().m_x
+                                                          - (m_tank_radius.m_x + m_tank_pos.m_x));
+  }
+  if ( _boid.get_position()[0]<(-1*(m_tank_radius.m_x + m_tank_pos.m_x)) )
+  {
+    new_dir[0] *= -1*m_speed_loss;
+    new_pos.m_x = (m_tank_radius.m_x + m_tank_pos.m_x) + ( -1*(m_tank_radius.m_x + m_tank_pos.m_x) -
+                                        _boid.get_position().m_x);
+  }
+  if(_boid.get_position()[1]>(m_tank_radius.m_y + m_tank_pos.m_y) )
+  {
+    new_dir[1] *= -1*m_speed_loss;
+    new_pos.m_y = (m_tank_radius.m_y + m_tank_pos.m_y) - ( _boid.get_position().m_y
+                                                          - (m_tank_radius.m_y + m_tank_pos.m_y));
+  }
+  if ( _boid.get_position()[1]<(-1*(m_tank_radius.m_y + m_tank_pos.m_y)) )
+  {
+    new_dir[1] *= -1*m_speed_loss;
+    new_pos.m_y = (m_tank_radius.m_y + m_tank_pos.m_y) + ( -1*(m_tank_radius.m_y + m_tank_pos.m_y) -
+                                                          _boid.get_position().m_y);
+  }
+  if(_boid.get_position()[2]>(m_tank_radius.m_z + m_tank_pos.m_z) )
+  {
+    new_dir[2] *= -1*m_speed_loss;
+    new_pos.m_z = (m_tank_radius.m_z + m_tank_pos.m_z) - ( _boid.get_position().m_z
+                                                          - (m_tank_radius.m_z + m_tank_pos.m_z));
+  }
+  if ( _boid.get_position()[2]<(-1*(m_tank_radius.m_z + m_tank_pos.m_z)) )
+  {
+    new_dir[2] *= -1*m_speed_loss;
+    new_pos.m_z = (m_tank_radius.m_z + m_tank_pos.m_z) + ( -1*(m_tank_radius.m_z + m_tank_pos.m_z) -
+                                                          _boid.get_position().m_z);
+  }
     _boid.set_direction(new_dir);
+    _boid.set_position(new_pos);
 }
 
 size_t Flock::getNumParticles() const
@@ -60,8 +93,6 @@ size_t Flock::getNumParticles() const
 
 void Flock::update()
 {
-  float _dt = 0.03f;
-  ngl::Vec3 gravity(0, -1.0f, 0);
   for (auto &boid : m_boids)
   {
     ngl::Vec3 aligned = {0.0f, 0.0f, 0.0f};
@@ -70,21 +101,21 @@ void Flock::update()
 
     if (m_alignment)
     {
-      aligned = alignment(boid);
+      aligned = alignment(boid) * m_alignment_inf;
     }
     if (m_cohesion)
     {
-      cohesive = cohesion(boid);
+      cohesive = cohesion(boid) * m_cohesion_inf;
     }
     if (m_separation)
     {
-       separated = separation(boid);
+       separated = separation(boid) * m_separation_inf;
     }
 
     boid.set_acceleration(separated + cohesive + aligned);
-    edge_detection(boid);
-    boid.get_position() += boid.get_direction() * _dt;
-    boid.get_direction() += (boid.get_acceleration()) + gravity * _dt * 0.2f;
+    boid.get_position() += boid.get_direction() * m_dt;
+    boid.get_direction() += (boid.get_acceleration()) + m_gravity * m_dt * 0.2f;
+    edges(boid);
     boid.set_acceleration({0.0f,0.0f,0.0f});
 
   }
@@ -92,7 +123,10 @@ void Flock::update()
 
 void Flock::render() const
 {
-  glPointSize(4);
+  glPointSize(m_boid_size);
+
+  if (m_boids.empty())
+    return;
 
   m_vao->bind();
   m_vao->setData(ngl::SimpleVAO::VertexData(m_boids.size()*sizeof(Boid), 
@@ -181,8 +215,119 @@ ngl::Vec3 Flock::separation(Boid &_boid)
   return avg_dir;
 }
 
+void Flock::clear_boids()
+{
+  m_boids.erase(m_boids.begin(), m_boids.end());
+}
+
 Boid &Flock::get_boid(const int &_id)
 {
   return m_boids[_id];
 }
 
+
+// ------------------------------------- GETTER AND SETTER METHODS --------------------------------------
+void Flock::set_boid_size(const int &_size)
+{
+  m_boid_size = _size;
+}
+
+void Flock::set_threshold(const double &_threshold)
+{
+  m_threshold = _threshold;
+}
+
+void Flock::set_force(const double &_force)
+{
+  m_force = _force;
+}
+
+void Flock::set_speed_loss(const double &_speed_loss)
+{
+  m_speed_loss = _speed_loss;
+}
+
+void Flock::set_delta_time(const double &_delta_time)
+{
+  m_dt = _delta_time;
+}
+
+void Flock::set_alignment_state(const bool &_align)
+{
+  m_alignment = _align;
+}
+
+void Flock::set_cohesion_state(const bool &_cohesive)
+{
+  m_cohesion = _cohesive;
+}
+
+void Flock::set_separation_state(const bool &_separate)
+{
+  m_separation = _separate;
+}
+
+void Flock::set_cohesion_factor(const double &_factor)
+{
+  m_cohesion_inf = _factor;
+}
+
+void Flock::set_alignment_factor(const double &_factor)
+{
+  m_alignment_inf = _factor;
+}
+
+void Flock::set_separation_factor(const double &_factor)
+{
+  m_separation_inf = _factor;
+}
+
+void Flock::set_tank_pos_x(const float &_posX)
+{
+  m_tank_pos.m_x = _posX;
+}
+
+void Flock::set_tank_pos_y(const float &_posY)
+{
+  m_tank_pos.m_y = _posY;
+}
+
+void Flock::set_tank_pos_z(const float &_posZ)
+{
+  m_tank_pos.m_z = _posZ;
+}
+
+void Flock::set_tank_rad_x(const float &_radX)
+{
+  m_tank_radius.m_x = _radX;
+}
+
+void Flock::set_tank_rad_y(const float &_radY)
+{
+    m_tank_radius.m_y = _radY;
+}
+
+void Flock::set_tank_rad_z(const float &_radZ)
+{
+    m_tank_radius.m_z = _radZ;
+}
+
+void Flock::set_emit_dir_x(const float &_emitDirX)
+{
+    m_emit_direction.m_x = _emitDirX;
+}
+
+void Flock::set_emit_dir_y(const float &_emitDirY)
+{
+    m_emit_direction.m_y = _emitDirY;
+}
+
+void Flock::set_emit_dir_z(const float &_emitDirZ)
+{
+    m_emit_direction.m_z = _emitDirZ;
+}
+
+void Flock::set_gravity(const float &_gravity)
+{
+    m_gravity.m_y = _gravity;
+}

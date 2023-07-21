@@ -1,0 +1,21 @@
+Flocking GUI Plan:
+
+- Properties:
+- Cohesion, Alignment, Separation Checkboxes
+- Cohesion ratio double spin box, slider
+- alignment ration double spin box, slider
+- separation ratio double spin box, slider
+
+- Other properties
+- Gravity 3 double spin boxes
+- Maximum Force one double spin box, slider
+- Loss of speed double spin box, slider
+
+- Tank properties
+- Tank radius
+- Tank position
+
+- Simulation
+- delta time , double spin box, slider
+- emit direction, 3 double spin boxes
+- button, reset to defaults
