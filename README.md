@@ -1,7 +1,7 @@
 # Flocking System
 This is a simple flocking system written using the NGL library, inspired by Craig-Reynolds flocking
 behaviour. It depicts flocking behaviour of boids using 3 simple rules, cohesion, separation and
-aggregation
+alignment
 
 ## Class implementation
 The way this class was implemented was by creating a flocking class, which handles the implementation
